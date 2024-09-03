@@ -4,9 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Contracts.Interfaces
+namespace Shared.DataTransferObjects
 {
-    public interface IEmployeeRepository
-    {
-    }
+    public record CompanyDto(Guid Id, string Name, string FullAddress);
+  
 }

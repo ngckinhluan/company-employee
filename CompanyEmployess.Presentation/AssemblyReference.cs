@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Contracts.Interfaces
+namespace CompanyEmployees.Presentation
 {
-    public interface IEmployeeRepository
+    public static class AssemblyReference
     {
     }
 }
