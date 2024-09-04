@@ -8,5 +8,6 @@ namespace Service.Contracts.Interfaces
 {
     public interface IEmployeeService
     {
+        //IEnumerable<EmployeeDto> GetAllEmployees(bool trackChanges);
     }
 }
