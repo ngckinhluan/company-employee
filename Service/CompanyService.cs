@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using Contracts.Interfaces;
+using Entities.Exception;
 using Entities.Models;
 using Service.Contracts.Interfaces;
 using Shared.DataTransferObjects;
@@ -26,19 +27,27 @@ namespace Service
 
         public IEnumerable<CompanyDto> GetAllCompanies(bool trackChanges)
         {
-            try
-            {
-                var companies = _repository.Company.GetAllCompanies(trackChanges);
-               var companiesDto = _mapper.Map<IEnumerable<CompanyDto>>(companies);
-                return companiesDto;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Something went wrong in the {nameof(GetAllCompanies)}: {ex}");
-                throw;
-            }
+            var companies = _repository.Company.GetAllCompanies(trackChanges);
+            return _mapper.Map<IEnumerable<CompanyDto>>(companies);
+        }
+
+        public CompanyDto GetCompany(Guid companyId, bool trackChanges)
+        {
+            var company = _repository.Company.GetCompany(companyId, trackChanges);
+            if (company is null)
+                throw new CompanyNotFoundException(companyId);
+            return _mapper.Map<CompanyDto>(company);
+        }
+
+        public CompanyDto CreateCompany(CompanyForCreationDto company)
+        {
+            var companyEntity = _mapper.Map<Company>(company);
+            _repository.Company.CreateCompany(companyEntity);
+            _repository.Save();
+            var companyToReturn = _mapper.Map<CompanyDto>(companyEntity);
+            return companyToReturn;
         }
     }
 }
-    
+
 
