@@ -2,55 +2,53 @@
 using Microsoft.Net.Http.Headers;
 using Shared.DataTransferObjects;
 using System.Text;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using System;
 
-namespace CompanyEmployees
+namespace CompanyEmployees;
+
+public class CsvOutputFormatter : TextOutputFormatter
 {
-    public class CsvOutputFormatter : TextOutputFormatter
-    {
-        public CsvOutputFormatter()
-        {
-            SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("text/csv"));
-            SupportedEncodings.Add(Encoding.UTF8);
-            SupportedEncodings.Add(Encoding.Unicode);
-        }
+	public CsvOutputFormatter()
+	{
+		SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("text/csv"));
+		SupportedEncodings.Add(Encoding.UTF8);
+		SupportedEncodings.Add(Encoding.Unicode);
+	}
 
-        protected override bool CanWriteType(Type? type)
-        {
-            if (typeof(CompanyDto).IsAssignableFrom(type) ||
-                typeof(IEnumerable<CompanyDto>).IsAssignableFrom(type))
-            {
-                return base.CanWriteType(type);
-            }
-            return false;
-        }
+	protected override bool CanWriteType(Type? type)
+	{
+		if (typeof(CompanyDto).IsAssignableFrom(type)
+			|| typeof(IEnumerable<CompanyDto>).IsAssignableFrom(type))
+		{
+			return base.CanWriteType(type);
+		}
 
-        public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
-        {
-            var response = context.HttpContext.Response;
-            var buffer = new StringBuilder();
+		return false;
+	}
 
-            if (context.Object is IEnumerable<CompanyDto> companies)
-            {
-                foreach (var company in companies)
-                {
-                    FormatCsv(buffer, company);
-                }
-            }
-            else if (context.Object is CompanyDto company)
-            {
-                FormatCsv(buffer, company);
-            }
+	public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context,
+		Encoding selectedEncoding)
+	{
+		var response = context.HttpContext.Response;
+		var buffer = new StringBuilder();
 
-            await response.WriteAsync(buffer.ToString());
-        }
+		if (context.Object is IEnumerable<CompanyDto>)
+		{
+			foreach (var company in (IEnumerable<CompanyDto>)context.Object)
+			{
+				FormatCsv(buffer, company);
+			}
+		}
+		else
+		{
+			FormatCsv(buffer, (CompanyDto)context.Object);
+		}
 
-        private static void FormatCsv(StringBuilder buffer, CompanyDto company)
-        {
-            buffer.AppendLine($"{company.Id},\"{company.Name},\"{company.FullAddress}\"");
-        }
+		await response.WriteAsync(buffer.ToString());
+	}
 
-    }
+	private static void FormatCsv(StringBuilder buffer, CompanyDto company)
+	{
+		buffer.AppendLine($"{company.Id},\"{company.Name},\"{company.FullAddress}\"");
+	}
+
 }

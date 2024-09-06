@@ -6,8 +6,6 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Repository;
 
-#nullable disable
-
 namespace CompanyEmployees.Migrations
 {
     [DbContext(typeof(RepositoryContext))]
@@ -17,10 +15,9 @@ namespace CompanyEmployees.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.8")
-                .HasAnnotation("Relational:MaxIdentifierLength", 128);
-
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+                .HasAnnotation("Relational:MaxIdentifierLength", 128)
+                .HasAnnotation("ProductVersion", "5.0.10")
+                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
             modelBuilder.Entity("Entities.Models.Company", b =>
                 {
@@ -51,7 +48,7 @@ namespace CompanyEmployees.Migrations
                         {
                             Id = new Guid("c9d4c053-49b6-410c-bc78-2d54a9991870"),
                             Address = "583 Wall Dr. Gwynn Oak, MD 21207",
-                            Country = "United States",
+                            Country = "USA",
                             Name = "IT_Solutions Ltd"
                         },
                         new
