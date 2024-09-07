@@ -22,7 +22,7 @@ internal sealed class EmployeeService : IEmployeeService
 
 	public IEnumerable<EmployeeDto> GetEmployees(Guid companyId, bool trackChanges)
 	{
-		var company = _repository.Company.GetCompany(companyId, trackChanges);
+		var company = _repository.Company.GetCompanyAsync(companyId, trackChanges);
 		if (company is null)
 			throw new CompanyNotFoundException(companyId);
 		var employeesFromDb = _repository.Employee.GetEmployees(companyId, trackChanges);
@@ -32,7 +32,7 @@ internal sealed class EmployeeService : IEmployeeService
 
 	public EmployeeDto GetEmployee(Guid companyId, Guid id, bool trackChanges)
 	{
-		var company = _repository.Company.GetCompany(companyId, trackChanges);
+		var company = _repository.Company.GetCompanyAsync(companyId, trackChanges);
 		if (company is null)
 			throw new CompanyNotFoundException(companyId);
 		var employeeDb = _repository.Employee.GetEmployee(companyId, id, trackChanges);
@@ -44,7 +44,7 @@ internal sealed class EmployeeService : IEmployeeService
 
 	public EmployeeDto CreateEmployeeForCompany(Guid companyId, EmployeeForCreationDto employeeForCreation, bool trackChanges)
 	{
-		var company = _repository.Company.GetCompany(companyId, trackChanges);
+		var company = _repository.Company.GetCompanyAsync(companyId, trackChanges);
 		if (company is null)
 			throw new CompanyNotFoundException(companyId);
 		var employeeEntity = _mapper.Map<Employee>(employeeForCreation);
@@ -56,14 +56,14 @@ internal sealed class EmployeeService : IEmployeeService
 
 	public void DeleteEmployeeForCompany(Guid companyId, Guid id, bool trackChanges)
 	{
-		var company = _repository.Company.GetCompany(companyId, trackChanges);
+		var company = _repository.Company.GetCompanyAsync(companyId, trackChanges);
 		if (company is null)
 			throw new CompanyNotFoundException(companyId);
 		var employeeDb = _repository.Employee.GetEmployee(companyId, id, trackChanges);
 		if (employeeDb is null)
 			throw new EmployeeNotFoundException(id);
 		_repository.Employee.DeleteEmployee(employeeDb);
-		_repository.Save();
+		_repository.SaveAsync();
 	}
 
 	public void UpdateEmployeeForCompany(Guid companyId, Guid id, EmployeeForUpdateDto
