@@ -24,8 +24,5 @@ public class ValidationFilterAttribute : IActionFilter
             context.Result = new UnprocessableEntityObjectResult(context.ModelState);
     }
 
-    public void OnActionExecuted(ActionExecutedContext context)
-    {
-        throw new NotImplementedException();
-    }
+    public void OnActionExecuted(ActionExecutedContext context) { }
 }

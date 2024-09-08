@@ -1,9 +1,10 @@
-﻿using CompanyEmployees.Presentation.ActionFilters;
+﻿using System.Text.Json;
+using CompanyEmployees.Presentation.ActionFilters;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Service.Contracts.Interfaces;
 using Shared.DataTransferObjects;
-using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
+using Shared.RequestFeatures;
 
 namespace CompanyEmployees.Presentation.Controllers;
 
@@ -16,10 +17,13 @@ public class EmployeesController : ControllerBase
     public EmployeesController(IServiceManager service) => _service = service;
 
     [HttpGet]
-    public async Task<IActionResult> GetEmployeesForCompany(Guid companyId)
+    public async Task<IActionResult> GetEmployeesForCompany(Guid companyId,
+        [FromQuery] EmployeeParameters employeeParameters)
     {
-        var employees = await _service.EmployeeService.GetEmployeesAsync(companyId, trackChanges: false);
-        return Ok(employees);
+        var pagedResult = await _service.EmployeeService.GetEmployeesAsync(companyId,
+            employeeParameters, trackChanges: false);
+        Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(pagedResult.metaData));
+        return Ok(pagedResult.employees);
     }
 
     [HttpGet("{id:guid}", Name = "GetEmployeeForCompany")]
@@ -31,16 +35,13 @@ public class EmployeesController : ControllerBase
 
     [HttpPost]
     [ServiceFilter(typeof(ValidationFilterAttribute))]
-    public async Task<IActionResult> CreateEmployeeForCompany(Guid companyId, [FromBody] EmployeeForCreationDto employee)
+    public async Task<IActionResult> CreateEmployeeForCompany
+        (Guid companyId, [FromBody] EmployeeForCreationDto employee)
     {
-        var employeeToReturn = await 
-            _service.EmployeeService.CreateEmployeeForCompanyAsync(companyId, employee,
-                trackChanges: false);
-        return CreatedAtRoute("GetEmployeeForCompany", new
-            {
-                companyId, id =
-                    employeeToReturn.Id
-            },
+        var employeeToReturn = await _service.EmployeeService.CreateEmployeeForCompanyAsync(companyId, employee,
+            trackChanges: false);
+
+        return CreatedAtRoute("GetEmployeeForCompany", new { companyId, id = employeeToReturn.Id },
             employeeToReturn);
     }
 
@@ -60,13 +61,16 @@ public class EmployeesController : ControllerBase
             compTrackChanges: false, empTrackChanges: true);
         return NoContent();
     }
+
     [HttpPatch("{id:guid}")]
     public async Task<IActionResult> PartiallyUpdateEmployeeForCompany(Guid companyId, Guid id,
         [FromBody] JsonPatchDocument<EmployeeForUpdateDto> patchDoc)
     {
         if (patchDoc is null)
             return BadRequest("patchDoc object sent from client is null.");
-        var result = await _service.EmployeeService.GetEmployeeForPatchAsync(companyId, id, compTrackChanges: false, empTrackChanges: true);
+        var result =
+            await _service.EmployeeService.GetEmployeeForPatchAsync(companyId, id, compTrackChanges: false,
+                empTrackChanges: true);
         if (result.employeeToPatch is null)
             return NotFound();
         patchDoc.ApplyTo(result.employeeToPatch, ModelState);
@@ -76,5 +80,4 @@ public class EmployeesController : ControllerBase
         await _service.EmployeeService.SaveChangesForPatchAsync(result.employeeToPatch, result.employeeEntity);
         return NoContent();
     }
-
 }
