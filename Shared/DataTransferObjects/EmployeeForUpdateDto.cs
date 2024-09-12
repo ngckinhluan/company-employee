@@ -1,8 +1,3 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿namespace Shared.DataTransferObjects;
 
-namespace Shared.DataTransferObjects;
-
-public record EmployeeForUpdateDto : EmployeeForManipulationDto
-{
-   
-}
+public record EmployeeForUpdateDto : EmployeeForManipulationDto;
