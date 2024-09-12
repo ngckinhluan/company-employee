@@ -33,6 +33,8 @@ builder.Services.AddScoped<ValidateMediaTypeAttribute>();
 builder.Services.AddScoped<IDataShaper<EmployeeDto>, DataShaper<EmployeeDto>>();
 builder.Services.AddScoped<IEmployeeLinks, EmployeeLinks>();
 
+builder.Services.ConfigureVersioning();
+
 builder.Services.AddControllers(config =>
 {
 	config.RespectBrowserAcceptHeader = true;
@@ -43,6 +45,7 @@ builder.Services.AddControllers(config =>
   .AddApplicationPart(typeof(CompanyEmployees.Presentation.AssemblyReference).Assembly);
 
 builder.Services.AddCustomMediaTypes();
+
 
 var app = builder.Build();
 

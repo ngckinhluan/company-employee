@@ -1,7 +1,9 @@
-﻿using Contracts;
+﻿using CompanyEmployees.Presentation.Controllers;
+using Contracts;
 using LoggerService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.EntityFrameworkCore;
 using Repository;
 using Service;
@@ -25,6 +27,21 @@ public static class ServiceExtensions
 		services.Configure<IISOptions>(options =>
 		{
 		});
+	
+	public static void ConfigureVersioning(this IServiceCollection services)
+	{
+		services.AddApiVersioning(opt =>
+		{
+			opt.ReportApiVersions = true;
+			opt.AssumeDefaultVersionWhenUnspecified = true;
+			opt.DefaultApiVersion = new ApiVersion(1, 0);
+			opt.ApiVersionReader = new HeaderApiVersionReader("api-version");
+			opt.Conventions.Controller<CompaniesController>()
+				.HasApiVersion(new ApiVersion(1, 0));
+			opt.Conventions.Controller<CompaniesV2Controller>()
+				.HasDeprecatedApiVersion(new ApiVersion(2, 0));
+		});
+	}
 
 	public static void ConfigureLoggerService(this IServiceCollection services) =>
 		services.AddSingleton<ILoggerManager, LoggerManager>();
@@ -53,6 +70,8 @@ public static class ServiceExtensions
 			{
 				systemTextJsonOutputFormatter.SupportedMediaTypes
 				.Add("application/vnd.codemaze.hateoas+json");
+				systemTextJsonOutputFormatter.SupportedMediaTypes
+					.Add("application/vnd.codemaze.apiroot+json");
 			}
 
 			var xmlOutputFormatter = config.OutputFormatters
@@ -63,6 +82,8 @@ public static class ServiceExtensions
 			{
 				xmlOutputFormatter.SupportedMediaTypes
 				.Add("application/vnd.codemaze.hateoas+xml");
+				xmlOutputFormatter.SupportedMediaTypes
+					.Add("application/vnd.codemaze.apiroot+xml");
 			}
 		});
 	}
