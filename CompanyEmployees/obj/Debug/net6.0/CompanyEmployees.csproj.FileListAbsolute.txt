@@ -96,3 +96,7 @@ D:\Code\code-ultimate-asp\company-employees\CompanyEmployees\obj\Debug\net6.0\Co
 D:\Code\code-ultimate-asp\company-employees\CompanyEmployees\obj\Debug\net6.0\ref\CompanyEmployees.dll
 D:\Code\code-ultimate-asp\company-employees\CompanyEmployees\bin\Debug\net6.0\Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll
 D:\Code\code-ultimate-asp\company-employees\CompanyEmployees\bin\Debug\net6.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+D:\Code\code-ultimate-asp\company-employees\CompanyEmployees\bin\Debug\net6.0\Microsoft.OpenApi.dll
+D:\Code\code-ultimate-asp\company-employees\CompanyEmployees\bin\Debug\net6.0\Swashbuckle.AspNetCore.Swagger.dll
+D:\Code\code-ultimate-asp\company-employees\CompanyEmployees\bin\Debug\net6.0\Swashbuckle.AspNetCore.SwaggerGen.dll
+D:\Code\code-ultimate-asp\company-employees\CompanyEmployees\bin\Debug\net6.0\Swashbuckle.AspNetCore.SwaggerUI.dll

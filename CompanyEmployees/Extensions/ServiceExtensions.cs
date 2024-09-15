@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Repository;
 using Service;
 using Service.Contracts;
@@ -136,13 +137,45 @@ public static class ServiceExtensions
             .AddEntityFrameworkStores<RepositoryContext>()
             .AddDefaultTokenProviders();
     }
+
+    // public static void ConfigureJWT(this IServiceCollection services, IConfiguration
+    //     configuration)
+    // {
+    //     var jwtSettings = configuration.GetSection("JwtSettings");
+    //     // var secretKey = Environment.GetEnvironmentVariable("SECRET");
+    //     var secretKey = jwtSettings["SecretKey"];
+    //     services.AddAuthentication(opt =>
+    //         {
+    //             opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    //             opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    //         })
+    //         .AddJwtBearer(options =>
+    //         {
+    //             options.TokenValidationParameters = new TokenValidationParameters
+    //             {
+    //                 ValidateIssuer = true,
+    //                 ValidateAudience = true,
+    //                 ValidateLifetime = true,
+    //                 ValidateIssuerSigningKey = true,
+    //                 ValidIssuer = jwtSettings["validIssuer"],
+    //                 ValidAudience = jwtSettings["validAudience"],
+    //                 IssuerSigningKey = new
+    //                     SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
+    //             };
+    //         });
+    // }
+    //
     
-    public static void ConfigureJWT(this IServiceCollection services, IConfiguration
-        configuration)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="services"></param>
+    /// <param name="configuration"></param>
+    public static void ConfigureJWT(this IServiceCollection services, IConfiguration configuration)
     {
         var jwtSettings = configuration.GetSection("JwtSettings");
-        // var secretKey = Environment.GetEnvironmentVariable("SECRET");
         var secretKey = jwtSettings["SecretKey"];
+
         services.AddAuthentication(opt =>
             {
                 opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -150,6 +183,22 @@ public static class ServiceExtensions
             })
             .AddJwtBearer(options =>
             {
+                // Modify how the token is retrieved from the Authorization header
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        // Remove "Bearer " prefix requirement, and take token as is
+                        var token = context.Request.Headers["Authorization"].FirstOrDefault();
+                        if (!string.IsNullOrEmpty(token))
+                        {
+                            context.Token = token; // Accept the token directly without "Bearer " prefix
+                        }
+                        return Task.CompletedTask;
+                    }
+                };
+        
+                // Set the Token Validation Parameters
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
@@ -158,9 +207,70 @@ public static class ServiceExtensions
                     ValidateIssuerSigningKey = true,
                     ValidIssuer = jwtSettings["validIssuer"],
                     ValidAudience = jwtSettings["validAudience"],
-                    IssuerSigningKey = new
-                        SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
                 };
             });
     }
+
+
+    public static void ConfigureSwagger(this IServiceCollection services)
+    {
+        services.AddSwaggerGen(s =>
+        {
+            s.SwaggerDoc("v1", new OpenApiInfo
+            {
+                Title = "Code Maze API", 
+                Version = "v1",
+                Description = "CompanyEmployees API by CodeMaze",
+                TermsOfService = new Uri("https://link.com/terms"),
+                Contact = new OpenApiContact
+                {
+                    Name = "Tran Luan",
+                    Email = "luantnk2907@gmail.com",
+                    Url = new Uri("https://www.linkedin.com/in/luantnk0729")
+                },
+                License = new OpenApiLicense
+                {
+                    Name = "CompanyEmployees API LICX",
+                    Url = new Uri("https://opensource.org/licenses/MIT")
+                }
+            });
+            s.SwaggerDoc("v2", new OpenApiInfo
+            {
+                Title = "Code Maze API", Version = "v2"
+            });
+            
+            var xmlFile = $"{typeof(Presentation.AssemblyReference).Assembly.GetName().Name}.xml";
+            var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+            s.IncludeXmlComments(xmlPath);
+        
+            s.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                In = ParameterLocation.Header,
+                Description = "Place to add JWT with Bearer",
+                Name = "Authorization",
+                Type = SecuritySchemeType.ApiKey,
+                Scheme = "Bearer"
+            });
+
+            s.AddSecurityRequirement(new OpenApiSecurityRequirement()
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        },
+                        Name = "Bearer",
+                        In = ParameterLocation.Header,
+                        Scheme = "Bearer"
+                    },
+                    new List<string>()
+                }
+            });
+        });
+    }
+
 }
